@@ -1,1 +1,39 @@
-This is a read me file-
+NoRoadBlockMtl
+
+For the moment very basic structure:
+- 	readworks.php: read the data source from montreal website and insert all the road blocks.
+	For the moment, it does a stupid insert, and DB has few limitation, so if script is executed twice, points will be inserted twice...
+
+-	index.php: displays a google maps + form to select the route/path + send path points to page postme.php
+	To use the form : 	1. Select enter a start and end point and click "Tracer trajet" => this will print the path
+								2. Enter a distance (it's in kilometers) and click on "Valider trajet" to send the path to the postme.php page
+								
+-	postme.php: read the form variable and queries the DB to retrieve and prints points with the entered distance of the selected path
+
+-	config.php: contains the configuration to connect to the PostgreSQL DB (config.php.template should be renamed as config.php and values should be filled)
+
+------
+Setup of the DB
+
+The code works with the folliwing DB structure :
+
+Definition of the table (SQL)
+
+CREATE TABLE "points_chantier" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "name" varchar(500) NOT NULL,
+    "where" text NOT NULL,
+    "raw_description" text NOT NULL
+);
+
+
+--------
+Creation of the PostGIS parameters
+
+SELECT AddGeometryColumn('points_chantier', 'point', 4326, 'LINESTRING', 2);
+ALTER TABLE "points_chantier" ALTER "point" SET NOT NULL;
+CREATE INDEX "points_chantier_point_id" ON "points_chantier" USING GIST ( "point" GIST_GEOMETRY_OPS );
+
+Note: initially my DB was created with a 'POINT' as the fourth parameter of the AddGeometryColumn.
+However the city started using LINESTRING to mark roadworks. In my DB I just removed the POINT constrains.
+But here, I set LINESTRING as the type of geometry.

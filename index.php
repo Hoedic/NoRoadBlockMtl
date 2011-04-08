@@ -34,17 +34,16 @@ var rendererOptions = {
 
 //Listener to track the changes in the path
 //Disabled for the moment, it seems to create an infinite loop somewhere...
-/*
+
     google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
-    calcRoute();
+    //calcRoute();
+	processRoute(directionsDisplay.directions);
    });
-*/
 
-  }
-  
+}
 
 
-  function calcRoute() {
+function calcRoute() {
 
 	//Get the start and end point from the form  	
 	  var start = document.getElementById("start").value;
@@ -56,13 +55,20 @@ var rendererOptions = {
         destination:end,
         travelMode: google.maps.DirectionsTravelMode.DRIVING
     };
-    directionsService.route(request, function(response, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
-        directionsDisplay.setDirections(response);
+
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    }
+  });
+
+}
+  
+function processRoute (result) {
 
 		//Retrieve and format the path. Target format is "long1 lat1, long2 lat2, ..."
 		var fullString = "";
-	  	var myRoute = response.routes[0].overview_path;
+	  	var myRoute = result.routes[0].overview_path;
 
 	  	for (var i = 0; i < myRoute.length; i++) {
 			var exploded = (myRoute[i] + ",").split(",");
@@ -77,7 +83,7 @@ var rendererOptions = {
 			  infowindow.open(map,marker);
 			});*/
         }
-	  }
+
 
 	  fullString = fullString.replace(")", "");
 	  fullString = fullString.replace("(", "");
@@ -86,8 +92,9 @@ var rendererOptions = {
 	  var postValue = document.getElementById('hiddenpath');
 	  postValue.value = fullString.substring(0, fullString.length - 2);
 
-    });
-  }
+}   
+
+
 </script>
 </head>
 <body onload="initialize()">
@@ -97,7 +104,7 @@ var rendererOptions = {
 <input type="button" value="Tracer trajet" onclick="calcRoute();"/>&nbsp;&nbsp;&nbsp;
 
 <form action="postme.php" method="post">
-<input type="hidden" name="hiddenpath" id="hiddenpath" value=""/>
+<input type="text" name="hiddenpath" id="hiddenpath" value=""/>
 <input type="text" name="distance" id="distance" value="distance" />
 <input type="submit" value="Valider trajet"/>&nbsp;&nbsp;&nbsp;
 </form>

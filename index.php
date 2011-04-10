@@ -6,6 +6,7 @@
 <title>NoRoadBlockMtl</title>
 <!--link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" /-->
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script src="http://code.jquery.com/jquery-1.5.js"></script>
 <script type="text/javascript">
   var directionDisplay;
   var directionsService = new google.maps.DirectionsService();
@@ -22,7 +23,7 @@ var rendererOptions = {
     directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
     var myCentre = new google.maps.LatLng(45.50, -73.55);
     var myOptions = {
-      zoom:7,
+      zoom:9,
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       center: myCentre
     }
@@ -38,7 +39,7 @@ var rendererOptions = {
     google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     //calcRoute();
 	processRoute(directionsDisplay.directions);
-   });
+   }); 
 
 }
 
@@ -60,6 +61,47 @@ function calcRoute() {
     if (status == google.maps.DirectionsStatus.OK) {
       directionsDisplay.setDirections(response);
     }
+  });
+  
+  
+  
+   var mapBounds = map.getBounds();
+   //alert (mapBounds);
+	var northEast = mapBounds.getNorthEast();
+	var southWest = mapBounds.getSouthWest();	
+	var neLat = northEast.lat();
+	var neLon = northEast.lng();
+	var swLat = southWest.lat();
+	var swLon = southWest.lng();
+	var url = "http://96.21.124.183:8080/NoRoadBlockMtl/json.php";
+	var query = "?nelat=" +  neLat + "&nelon=" + neLon + "&swlat=" + swLat + "&swlon=" + swLon;
+//	alert(url + query);  
+   
+   $.getJSON(url + query,"",
+  function(data) {
+
+
+	for (i in data){
+		var travaux = [];
+		
+		for (j in data[i]){
+			var splited = data[i][j].split(" ");
+			var pointpassage = new google.maps.LatLng(splited[1], splited[0]);
+			travaux.push(pointpassage);
+//		alert(formated);
+		}
+		
+  		var zeLigne = new google.maps.Polyline({
+    		path: travaux,
+    		strokeColor: "#FF0000",
+    		strokeOpacity: 0.5,
+    		strokeWeight: 6
+  		});
+
+  		zeLigne.setMap(map);
+
+	}
+  
   });
 
 }
@@ -99,8 +141,8 @@ function processRoute (result) {
 </head>
 <body onload="initialize()">
 <div>
-<b>Start: </b> <input id="start" type="text" name="start" />&nbsp;&nbsp;&nbsp;
-<b>End: </b> <input id="end" type="text" name="end" />&nbsp;&nbsp;&nbsp;
+<b>Start: </b> <input id="start" type="text" name="start" value="5233 av de gaspé, Montréal, qc"/>&nbsp;&nbsp;&nbsp;
+<b>End: </b> <input id="end" type="text" name="end" value="510, sherbrooke west, montréal, qc"/>&nbsp;&nbsp;&nbsp;
 <input type="button" value="Tracer trajet" onclick="calcRoute();"/>&nbsp;&nbsp;&nbsp;
 
 <form action="postme.php" method="post">

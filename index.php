@@ -73,33 +73,42 @@ function calcRoute() {
 	var neLon = northEast.lng();
 	var swLat = southWest.lat();
 	var swLon = southWest.lng();
-	var url = "http://96.21.124.183:8080/NoRoadBlockMtl/json.php";
-	var query = "?nelat=" +  neLat + "&nelon=" + neLon + "&swlat=" + swLat + "&swlon=" + swLon;
+	var url = "http://96.21.124.183:8080/NoRoadBlockMtl/api/works.json?q=toto";
+//	var query = "?nelat=" +  neLat + "&nelon=" + neLon + "&swlat=" + swLat + "&swlon=" + swLon;
 //	alert(url + query);  
    
-   $.getJSON(url + query,"",
+   $.getJSON(url,"",
   function(data) {
 
 
 	for (i in data){
 		var travaux = [];
+		//alert(data[i]["name"]);
 		
-		for (j in data[i]){
-			var splited = data[i][j].split(" ");
+		for (j in data[i]["coordinates"]){
+			var splited = data[i]["coordinates"][j].split(" ");
 			var pointpassage = new google.maps.LatLng(splited[1], splited[0]);
 			travaux.push(pointpassage);
 //		alert(formated);
 		}
 		
-  		var zeLigne = new google.maps.Polyline({
-    		path: travaux,
-    		strokeColor: "#FF0000",
-    		strokeOpacity: 0.5,
-    		strokeWeight: 6
-  		});
+		alert("Taille du array" + travaux.length);
+		
+	   var marker = new google.maps.Marker({
+   	   position: travaux[0], 
+      		map: map, 
+ 			});
+  		
+		if (travaux.length > 1){		
+  			var zeLigne = new google.maps.Polyline({
+    			path: travaux,
+    			strokeColor: "#FF0000",
+    			strokeOpacity: 0.5,
+    			strokeWeight: 6
+  			});
 
-  		zeLigne.setMap(map);
-
+  			zeLigne.setMap(map);
+		}
 	}
   
   });
@@ -136,6 +145,17 @@ function processRoute (result) {
 
 }   
 
+function postJson () {
+	
+		myObject = new Object();	
+	
+	  var postValue = document.getElementById('hiddenpath');
+	  myObject.route = postValue.value;
+	  myObject.name = document.getElementById('routename').value;		
+	  var theData = JSON.stringify(myObject);
+	alert(theData);
+		$.post('http://96.21.124.183:8080/NoRoadBlockMtl/api/routes.json', { data: theData});
+}
 
 </script>
 </head>
@@ -148,8 +168,12 @@ function processRoute (result) {
 <form action="postme.php" method="post">
 <input type="text" name="hiddenpath" id="hiddenpath" value=""/>
 <input type="text" name="distance" id="distance" value="distance" />
+<input type="text" name="userid" id="userid" value="user id to be sent" />
+<input type="text" name="routename" id="routename" value="Maison => Notman house" />
 <input type="submit" value="Valider trajet"/>&nbsp;&nbsp;&nbsp;
+<input type="button" value="Throw Json Post"  onclick="postJson()"/>
 </form>
+
 </div>
 <div>&nbsp;</div>
 <div style="width:100%; height:500px" id="map_canvas"></div>

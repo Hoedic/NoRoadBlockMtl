@@ -21,11 +21,19 @@
 	}
 
 
+
+
 //Function to insert a "place" in the DB
 function insertWork($myWorkObject){
 
 	//Reformat coordinates
-	$fullCoordinates = formatInsertCoordinatesfromGML($myWorkObject->LineString->coordinates . "");
+
+	if (isset($myWorkObject->LineString->coordinates)){
+
+		$fullCoordinates = formatInsertCoordinatesfromGML($myWorkObject->LineString->coordinates . "");
+	} elseif(isset($myWorkObject->Point->coordinates)) {
+		$fullCoordinates = formatInsertCoordinatesfromGML($myWorkObject->Point->coordinates . "");
+	}
 
 	//Prepare insertion query
 	$myQuery = "INSERT INTO points_chantier(\"name\", \"where\", \"raw_description\", \"point\")";
@@ -54,18 +62,22 @@ function formatInsertCoordinatesfromGML($string){
 	$objectType = "";
 	$explodedString = explode("\n", $string);
 	
+	print_r($explodedString);
+	
 	if (count($explodedString) == 1){
 		$objectType = "POINT";
 	}else {
 		$objectType = "LINESTRING";
 	}
 
-	for($i=0; $i < count($explodedString)-1; $i++) {
-		$explodedPoint = explode(",", $explodedString[$i]);
+	foreach($explodedString as $onePoint) {
+		$explodedPoint = explode(",", $onePoint);
 		$output .= $explodedPoint[0] . " " . $explodedPoint[1] . ",";
 	}
 	
-	$output = $objectType . "(" . substr($output, 0, strlen($output)-1) . ")";	
+	//Check why we need to do a substring 3...
+	$output = $objectType . "(" . substr($output, 0, strlen($output)-3) . ")";	
+	echo $output , "<br/>";
 	
 	return $output;
 }	

@@ -1,0 +1,80 @@
+<?php
+
+	include_once("../config.php");
+//ob_start();
+
+	//Connect to DB
+	$conn = pg_pconnect("dbname=". $GLOBALS["db_name"] ." user=". $GLOBALS["db_user"] ." password=". $GLOBALS["db_password"]);
+	if (!$conn) {
+		echo "An error occured on connect.\n";
+		exit;
+	}
+
+
+
+class Route
+{
+	public $coordinates;
+	public $name;	
+		
+}	
+
+
+if(!empty($_GET)) {
+
+	//Create SELECT query to retrieve the points within the distance selected in the form
+	$selectString = 'select "name", ST_AsText(route_geom) from user_routes';
+
+	$result = pg_query($conn, $selectString);
+	if (!$result) {
+		echo "An error occured on query.\n";
+		exit;
+	}
+	
+
+	$arrayPoint;
+	//Print in the page the list of the road work retrieved
+	while ($row = pg_fetch_row($result)) {
+		//echo $row[1];		
+		//echo "<br />\n";
+		$explodedLine = "";
+		if (substr($row[1], 0, 10) == "LINESTRING"){
+			$theline = substr(substr($row[1], 0, strlen($row[1])-1), 11);
+			$explodedLine = explode(",", $theline);
+		}
+		
+		$currentRoute = new Route();
+		
+		$currentRoute->coordinates = $explodedLine;
+		$currentRoute->name = $row[0];
+				
+		
+		$arrayPoint[] =  $currentRoute;
+		$i++;
+		
+	}
+	
+	$encoded = json_encode($arrayPoint);	
+	
+	echo $encoded;	
+
+} elseif(!empty($_POST)) {
+
+	$decodedJson = json_decode($_REQUEST["data"]);
+	
+	$myQuery = "INSERT INTO user_routes(\"userid\", \"name\", \"route_geom\")";
+	$myQuery .= " VALUES (1, '". pg_escape_string($decodedJson->name) ."', ";
+	$myQuery .= "ST_GeomFromText('LINESTRING(". pg_escape_string($decodedJson->route) .")', 4326))";
+
+	$result = pg_query($conn, $myQuery);
+	if (!$result) {
+		echo "An error occured on query.\n";
+		exit;
+	}
+}
+
+//$output = ob_get_clean();
+//file_put_contents( '/var/www/NoRoadBlockMtl/data.txt', $output );	
+
+
+?>

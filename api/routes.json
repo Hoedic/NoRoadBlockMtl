@@ -16,6 +16,7 @@ class Route
 {
 	public $coordinates;
 	public $name;	
+	public $id;
 		
 }	
 
@@ -23,9 +24,16 @@ class Route
 if(!empty($_GET)) {
 
 	//Create SELECT query to retrieve the points within the distance selected in the form
-	$selectString = 'select "name", ST_AsText(route_geom) from user_routes';
+	$selectString = 'select "name", ST_AsText(route_geom), id from user_routes ';
+if (isset($_GET["userid"])){
+	$selectString .= 'where userid=' . $_GET["userid"];
+} elseif(isset($_GET["routeid"]))  {
+	$selectString .= 'where id=' . $_GET["routeid"];
+}
 
-	$result = pg_query($conn, $selectString);
+	//echo "GET Query : $selectString\n";
+	$result = pg_query($conn, $selectString);	
+	
 	if (!$result) {
 		echo "An error occured on query.\n";
 		exit;
@@ -47,11 +55,9 @@ if(!empty($_GET)) {
 		
 		$currentRoute->coordinates = $explodedLine;
 		$currentRoute->name = $row[0];
-				
+		$currentRoute->id = $row[2];				
 		
-		$arrayPoint[] =  $currentRoute;
-		$i++;
-		
+		$arrayPoint[] =  $currentRoute;		
 	}
 	
 	$encoded = json_encode($arrayPoint);	
@@ -63,8 +69,10 @@ if(!empty($_GET)) {
 	$decodedJson = json_decode($_REQUEST["data"]);
 	
 	$myQuery = "INSERT INTO user_routes(\"userid\", \"name\", \"route_geom\")";
-	$myQuery .= " VALUES (1, '". pg_escape_string($decodedJson->name) ."', ";
+	$myQuery .= " VALUES (". pg_escape_string($decodedJson->userid) .", '". pg_escape_string($decodedJson->name) ."', ";
 	$myQuery .= "ST_GeomFromText('LINESTRING(". pg_escape_string($decodedJson->route) .")', 4326))";
+
+echo "insert query : $myQuery \n";
 
 	$result = pg_query($conn, $myQuery);
 	if (!$result) {

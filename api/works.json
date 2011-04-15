@@ -21,7 +21,16 @@ class Roadwork
 if(!empty($_GET)) {
 
 	//Create SELECT query to retrieve the points within the distance selected in the form
-	$selectString = 'select "name", ST_AsText(point) from points_chantier';
+
+
+	if (isset($_GET["routeid"])){
+		$selectString = 'select points_chantier.name, ST_AsText(points_chantier.point) from points_chantier ';
+		$selectString .= 'LEFT JOIN user_routes on ST_DWithin(points_chantier.point, user_routes.route_geom, 0.006)';		
+		$selectString .= 'WHERE user_routes.id = ' . $_GET["routeid"];
+	}else {
+		$selectString = 'select "name", ST_AsText(point) from points_chantier';
+	}
+
 
 	$result = pg_query($conn, $selectString);
 	if (!$result) {

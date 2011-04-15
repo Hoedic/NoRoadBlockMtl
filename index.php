@@ -92,7 +92,7 @@ function calcRoute() {
 //		alert(formated);
 		}
 		
-		alert("Taille du array" + travaux.length);
+		//alert("Taille du array" + travaux.length);
 		
 	   var marker = new google.maps.Marker({
    	   position: travaux[0], 
@@ -145,37 +145,83 @@ function processRoute (result) {
 
 }   
 
-function postJson () {
+function postNewRoute () {
 	
 		myObject = new Object();	
 	
 	  var postValue = document.getElementById('hiddenpath');
 	  myObject.route = postValue.value;
+	  myObject.userid = document.getElementById('userid').value;		  
 	  myObject.name = document.getElementById('routename').value;		
 	  var theData = JSON.stringify(myObject);
-	alert(theData);
+	//alert(theData);
 		$.post('http://96.21.124.183:8080/NoRoadBlockMtl/api/routes.json', { data: theData});
+}
+
+function getListOfRoutes () {
+	
+	var userid = document.getElementById('getuserid').value;		  
+	document.getElementById('listroutes').innerHTML = '&nbsp';
+	document.getElementById('listtravaux').innerHTML = '&nbsp';	
+	$.getJSON('http://96.21.124.183:8080/NoRoadBlockMtl/api/routes.json?userid=' + userid, function(data) {
+		var futureHTML = "";
+		for (i in data){
+			var name = data[i]["name"];
+		futureHTML += "<p>" + name + "("+ data[i]["id"] +")<br/>";
+		futureHTML += '<input type="button" value="Check roadwork on this route" onclick="getWorkWithId('+   data[i]["id"] +')"/>';
+		futureHTML += "</p>";
+			//alert(name);
+		}
+		
+		document.getElementById('listroutes').innerHTML = futureHTML;
+	});
+
+}
+
+function getWorkWithId (workId) {
+
+	document.getElementById('listroutes').innerHTML = '&nbsp';
+	document.getElementById('listtravaux').innerHTML = '&nbsp';	
+
+	$.getJSON('http://96.21.124.183:8080/NoRoadBlockMtl/api/works.json?routeid=' + workId , function(data) {
+		var futureHTML = "";
+		for (i in data){
+		var name = data[i]["name"];
+		futureHTML += "<p>" + name + "<br/>";
+		futureHTML += "</p>";
+			//alert(name);
+		}
+		
+		document.getElementById('listtravaux').innerHTML = futureHTML;
+	});
+
 }
 
 </script>
 </head>
 <body onload="initialize()">
 <div>
-<b>Start: </b> <input id="start" type="text" name="start" value="5233 av de gaspé, Montréal, qc"/>&nbsp;&nbsp;&nbsp;
-<b>End: </b> <input id="end" type="text" name="end" value="510, sherbrooke west, montréal, qc"/>&nbsp;&nbsp;&nbsp;
-<input type="button" value="Tracer trajet" onclick="calcRoute();"/>&nbsp;&nbsp;&nbsp;
-
+<b>Start: </b> <input id="start" type="text" name="start" value="Montréal, qc"/>&nbsp;&nbsp;&nbsp;
+<b>End: </b> <input id="end" type="text" name="end" value="Laval, qc"/>
+<input type="button" value="Trace my route" onclick="calcRoute();"/>
+<hr/>
 <form action="postme.php" method="post">
-<input type="text" name="hiddenpath" id="hiddenpath" value=""/>
-<input type="text" name="distance" id="distance" value="distance" />
-<input type="text" name="userid" id="userid" value="user id to be sent" />
-<input type="text" name="routename" id="routename" value="Maison => Notman house" />
-<input type="submit" value="Valider trajet"/>&nbsp;&nbsp;&nbsp;
-<input type="button" value="Throw Json Post"  onclick="postJson()"/>
+<input type="hidden" name="hiddenpath" id="hiddenpath" value=""/>
+<input type="hidden" name="distance" id="distance" value="distance" />
+User id (for insert) : <input type="text" name="userid" id="userid" value="1" /><br/>
+Name of the route : <input type="text" name="routename" id="routename" value="Montreal to Laval" /><br/>
+<input type="button" value="Submit My Route"  onclick="postNewRoute()"/>
 </form>
-
+<hr/>
 </div>
 <div>&nbsp;</div>
-<div style="width:100%; height:500px" id="map_canvas"></div>
+<div id="leftone" style="width:30%; float:left">
+Get list of routes for user 
+<input type="text" name="getuserid" id="getuserid" size="2" value="1">
+<input type="button" value="Get the list!" onclick="getListOfRoutes()"/>
+<div id="listroutes"></div>
+<div id="listtravaux"></div>
+</div>
+<div style="width:68%; height:500px" id="map_canvas"></div>
 </body>
 </html>

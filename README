@@ -37,3 +37,24 @@ CREATE INDEX "points_chantier_point_id" ON "points_chantier" USING GIST ( "point
 Note: initially my DB was created with a 'POINT' as the fourth parameter of the AddGeometryColumn.
 However the city started using LINESTRING to mark roadworks. In my DB I just removed the POINT constrains.
 But here, I set LINESTRING as the type of geometry.
+
+-------
+Creation of the user routes tables
+
+CREATE TABLE user_routes
+(
+  id serial NOT NULL,
+  userid integer NOT NULL,
+  "name" character varying(500) NOT NULL,
+)
+
+
+SELECT AddGeometryColumn('user_routes', 'route_geom', 4326, 'LINESTRING', 2);
+ALTER TABLE "user_routes" ALTER "route_geom" SET NOT NULL;
+CREATE INDEX "user_routes_geom" ON "user_routes" USING GIST ( "route_geom" GIST_GEOMETRY_OPS );
+
+----------
+
+Support of json extention : in order to support .json extention being interpreted by PHP, a special config might be needed for Apache.
+Add the following line in apache2.conf :
+AddType application/x-httpd-php .json 

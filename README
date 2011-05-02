@@ -58,3 +58,18 @@ CREATE INDEX "user_routes_geom" ON "user_routes" USING GIST ( "route_geom" GIST_
 Support of json extention : in order to support .json extention being interpreted by PHP, a special config might be needed for Apache.
 Add the following line in apache2.conf :
 AddType application/x-httpd-php .json 
+
+Added to that, the PHP include path should be set to search in all the useful directory.
+Could be done in apache2.conf also 
+For the moment it's as follow but should be improved:
+
+<Directory /var/www/NoRoadBlockMtl>
+  php_value include_path ".:/usr/share/php:/usr/share/pear:/var/www/NoRoadBlockMtl/inc:/var/www/NoRoadBlockMtl/api:/var/www/NoRoadBlockMtl/cron"
+</Directory>
+
+-------------
+
+Cron set up
+
+In order to automatically send notification mail, a cron can be set up :
+0 * * * * php -q /var/www/NoRoadBlockMtl/cron/readworks.php

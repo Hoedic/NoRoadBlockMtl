@@ -73,7 +73,7 @@ function calcRoute() {
 	var neLon = northEast.lng();
 	var swLat = southWest.lat();
 	var swLon = southWest.lng();
-	var url = "http://96.21.124.183:8080/NoRoadBlockMtl/api/works.json?q=toto";
+	var url = "http://96.21.124.183:2089/NoRoadBlockMtl/api/works.json?q=toto";
 //	var query = "?nelat=" +  neLat + "&nelon=" + neLon + "&swlat=" + swLat + "&swlon=" + swLon;
 //	alert(url + query);  
    
@@ -154,8 +154,8 @@ function postNewRoute () {
 	  myObject.userid = document.getElementById('userid').value;		  
 	  myObject.name = document.getElementById('routename').value;		
 	  var theData = JSON.stringify(myObject);
-	//alert(theData);
-		$.post('http://96.21.124.183:8080/NoRoadBlockMtl/api/routes.json', { data: theData});
+	alert(theData);
+		$.post('http://96.21.124.183:2089/NoRoadBlockMtl/api/routes.json', { data: theData});
 }
 
 function getListOfRoutes () {
@@ -163,7 +163,7 @@ function getListOfRoutes () {
 	var userid = document.getElementById('getuserid').value;		  
 	document.getElementById('listroutes').innerHTML = '&nbsp';
 	document.getElementById('listtravaux').innerHTML = '&nbsp';	
-	$.getJSON('http://96.21.124.183:8080/NoRoadBlockMtl/api/routes.json?userid=' + userid, function(data) {
+	$.getJSON('http://96.21.124.183:2089/NoRoadBlockMtl/api/routes.json?userid=' + userid, function(data) {
 		var futureHTML = "";
 		for (i in data){
 			var name = data[i]["name"];
@@ -183,7 +183,7 @@ function getWorkWithId (workId) {
 	document.getElementById('listroutes').innerHTML = '&nbsp';
 	document.getElementById('listtravaux').innerHTML = '&nbsp';	
 
-	$.getJSON('http://96.21.124.183:8080/NoRoadBlockMtl/api/works.json?routeid=' + workId , function(data) {
+	$.getJSON('http://96.21.124.183:2089/NoRoadBlockMtl/api/works.json?routeid=' + workId , function(data) {
 		var futureHTML = "";
 		for (i in data){
 		var name = data[i]["name"];
